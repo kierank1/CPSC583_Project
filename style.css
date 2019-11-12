@@ -1,0 +1,131 @@
+/* importing fonts from Google Font API */
+@import url('https://fonts.googleapis.com/css?family=Major+Mono+Display');
+@import url('https://fonts.googleapis.com/css?family=Sarabun:300,300i,400,700');
+
+html {
+    background: darkturquoise;
+    min-width: 1280px;
+    min-height: 720px;
+    overflow: auto;
+
+    font-family: "Sarabun", sans-serif;
+    font-weight: 300;
+    color: white;
+    letter-spacing: 0.1em;
+}
+
+body {
+    padding: 20px;
+}
+
+h1{
+    font-family: "Major Mono Display", sans-serif;
+    font-size: 3em;
+
+    color: white;
+    letter-spacing: normal;
+    text-transform: lowercase;
+
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+h2 {
+    font-family: "Major Mono Display", sans-serif;
+    font-size: 1.5em;
+    letter-spacing: normal;
+    text-transform: lowercase;
+}
+
+/* styling an element through its ID */
+div#div_page_desc {
+    margin: 10px;
+}
+
+div#div_data_desc {
+    background: beige;
+    box-sizing: border-box;
+    padding: 10px 20px;
+
+    color: black;
+}
+
+div#div_visuals {
+    background: beige;
+    background-clip: content-box;
+    width: 100%;
+    height: 100%;
+    min-height: 700px;
+    box-sizing: border-box;
+    padding: 10px;
+}
+
+div#div_buttons {
+    padding: 20px;
+}
+
+button {
+    background: beige;
+    border: none;
+    height: 30px;
+    padding: 0px 10px;
+
+    font-family: "Sarabun", sans-serif;
+    font-weight: 400;
+    font-size: 1em;
+    letter-spacing: 0.1em;
+}
+
+button:hover {
+    background: darkturquoise;
+    cursor: pointer;
+}
+
+button:focus {
+    outline: 0;
+}
+
+
+#vis {
+    background: beige;
+    display: block;
+    width: 90%;
+    height: 100%;
+    min-width: 800px;
+    min-height: 500px;
+    /*box-sizing: border-box;*/
+    margin: auto;
+    z-index: 1;
+}
+.rect {
+    stroke: black;
+    stroke-width: 1;
+}
+
+.toolTip {
+    position: absolute;
+    display: none;
+    min-width: 80px;
+    height: auto;
+    background: none repeat scroll 0 0 #ffffff;
+    border: 1px solid #6F257F;
+    padding: 14px;
+    text-align: center;
+    z-index: 2;
+}
+
+.domain,
+.tick,
+.tick path,
+.tick line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.domain text,
+.tick,
+.tick text {
+    font-family: "Sarabun", sans-serif;
+    font-size: 1em;
+}
