@@ -1,0 +1,59 @@
+circle {
+    stroke: white;
+    fill: #05668D;
+    opacity: 0.3;
+    stroke-width: 2px;
+}
+h2 {
+    text-align: left;
+    float: left;
+
+    font-family: "Major Mono Display", sans-serif;
+    font-size: 1.5em;
+    letter-spacing: normal;
+    text-transform: lowercase;
+}
+
+h7 {
+    float: left;
+    padding-top: 1.1em;
+    padding-left: 2.5em;
+}
+
+.my-legend .legend-title {
+    font-family: "Major Mono Display", sans-serif;
+    text-align: left;
+    margin-bottom: 8px;
+    letter-spacing: normal;
+    text-transform: lowercase;
+    font-weight: bold;
+}
+.my-legend .legend-colours ul {
+    margin: 0;
+    padding: 0;
+    float: left;
+    list-style: none;
+}
+.my-legend .legend-colours ul li {
+    display: block;
+    float: left;
+    width: 50px;
+    margin-bottom: 6px;
+    text-align: center;
+    font-size: 80%;
+    list-style: none;
+}
+.my-legend ul.legend-labels li span {
+    display: block;
+    float: left;
+    height: 15px;
+    width: 50px;
+}
+.my-legend .legend-source {
+    font-size: 70%;
+    color: #999;
+    clear: both;
+}
+.my-legend a {
+    color: #777;
+}
