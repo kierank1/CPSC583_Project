@@ -46,17 +46,14 @@
 
 <script>
 
-
-    let width = 1450;
+    let width = 1350;
     let height = 400
     let radius = 10;
-    let vData;
-
 
     // append the svg object to the body of the page
     let svg = d3.select("#my_dataviz")
         .append("svg")
-        .attr("width", width)
+        .attr("width", "100%")
         .attr("height", height)
 
     // create dummy data -> just one element per circle
@@ -70,12 +67,17 @@
         let data = internalData;
 
         let x = d3.scaleOrdinal()
-            .domain([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18])
-            .range([81, 162, 243, 324, 405, 486, 567, 648, 729, 810, 891, 972, 1053, 1134, 1215, 1296, 1377, 1458])
+            .domain(["Bug", "Dark", "Dragon", "Electric", "Fairy", "Fighting", "Fire", "Flying", "Ghost",
+                "Grass", "Ground", "Ice", "Normal", "Poison", "Psychic", "Rock", "Steel", "Water"])
+            .range([fractionalScale(0), fractionalScale(1), fractionalScale(2), fractionalScale(3), fractionalScale(4),
+                fractionalScale(5), fractionalScale(6), fractionalScale(7), fractionalScale(8), fractionalScale(9),
+                fractionalScale(10), fractionalScale(11), fractionalScale(12), fractionalScale(13), fractionalScale(14),
+                fractionalScale(15), fractionalScale(16), fractionalScale(17)])
 
         // A color scale
         let color = d3.scaleOrdinal()
-            .domain([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18])
+            .domain(["Bug", "Dark", "Dragon", "Electric", "Fairy", "Fighting", "Fire", "Flying", "Ghost",
+                    "Grass", "Ground", "Ice", "Normal", "Poison", "Psychic", "Rock", "Steel", "Water"])
             .range(['#A8B820', '#705848', '#7038F8', '#F8D030', '#EE99AC',
                 '#C03028', '#F08030', '#A890F0', '#705898', '#78C850',
                 '#E0C068', '#98D8D8', '#A8A878', '#A040A0', '#F85888',
@@ -90,10 +92,10 @@
             .attr("r", radius)
             .attr("cx", width / 2)
             .attr("cy", height / 2)
-            .style("fill", function(d){ return color(d.type)})
+            .style("fill", function(d){return color(d.type)})
             //.style("fill-opacity", 1.0)
             .attr("stroke", "black")
-            .style("stroke-width", 4)
+            .style("stroke-width", 2)
             .call(d3.drag() // call specific function when circle is dragged
                 .on("start", dragstarted)
                 .on("drag", dragged)
@@ -134,6 +136,13 @@
         }
 
     })
+
+    function fractionalScale(numerator) {
+        if(numerator === 0)
+            return 0
+        else
+            return numerator/18 * width;
+    }
 
 </script>
 
