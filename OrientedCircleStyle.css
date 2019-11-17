@@ -1,8 +1,8 @@
 circle {
     stroke: white;
     fill: #05668D;
-    opacity: 0.3;
-    stroke-width: 2px;
+    opacity: 1.0;
+    stroke-width: 1px;
 }
 h2 {
     text-align: left;

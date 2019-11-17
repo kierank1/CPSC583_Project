@@ -19,24 +19,24 @@
             <div class='legend-title'>All Pokemon Types</div>
             <div class='legend-colours'>
                 <ul class='legend-labels'>
-                    <li><span style='background:#2eff4e;'></span>Bug</li>
-                    <li><span style='background:#321d15;'></span>Dark</li>
-                    <li><span style='background:#9334ce;'></span>Dragon</li>
-                    <li><span style='background:#f2d736;'></span>Electric</li>
-                    <li><span style='background:#00B3E6;'></span>Fairy</li>
-                    <li><span style='background:#e680d9;'></span>Fighting</li>
-                    <li><span style='background:#656b79;'></span>Fire</li>
-                    <li><span style='background:#f95c00;'></span>Flying</li>
-                    <li><span style='background:#a9fff0;'></span>Ghost</li>
-                    <li><span style='background:#B34D4D;'></span>Grass</li>
-                    <li><span style='background:#c1bbbd;'></span>Ground</li>
-                    <li><span style='background:#869905;'></span>Ice</li>
-                    <li><span style='background:#624531;'></span>Normal</li>
-                    <li><span style='background:#94b6ff;'></span>Poison</li>
-                    <li><span style='background:#66991A;'></span>Psychic</li>
-                    <li><span style='background:#ffce82;'></span>Rock</li>
-                    <li><span style='background:#a84921;'></span>Steel</li>
-                    <li><span style='background:#FF1A66;'></span>Water</li>
+                    <li><span style='background:#A8B820;'></span>Bug</li>
+                    <li><span style='background:#705848;'></span>Dark</li>
+                    <li><span style='background:#7038F8;'></span>Dragon</li>
+                    <li><span style='background:#F8D030;'></span>Electric</li>
+                    <li><span style='background:#EE99AC;'></span>Fairy</li>
+                    <li><span style='background:#C03028;'></span>Fighting</li>
+                    <li><span style='background:#F08030;'></span>Fire</li>
+                    <li><span style='background:#A890F0;'></span>Flying</li>
+                    <li><span style='background:#705898;'></span>Ghost</li>
+                    <li><span style='background:#78C850;'></span>Grass</li>
+                    <li><span style='background:#E0C068;'></span>Ground</li>
+                    <li><span style='background:#98D8D8;'></span>Ice</li>
+                    <li><span style='background:#A8A878;'></span>Normal</li>
+                    <li><span style='background:#A040A0;'></span>Poison</li>
+                    <li><span style='background:#F85888;'></span>Psychic</li>
+                    <li><span style='background:#B8A038;'></span>Rock</li>
+                    <li><span style='background:#B8B8D0;'></span>Steel</li>
+                    <li><span style='background:#6890F0;'></span>Water</li>
                 </ul>
             </div>
         </div>
@@ -76,10 +76,10 @@
         // A color scale
         let color = d3.scaleOrdinal()
             .domain([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18])
-            .range(['#2eff4e', '#321d15', '#9334ce', '#f2d736', '#00B3E6',
-                '#e680d9', '#656b79', '#f95c00', '#a9fff0', '#B34D4D',
-                '#c1bbbd', '#869905', '#624531', '#94b6ff', '#66991A',
-                '#ffce82', '#a84921', '#FF1A66'])
+            .range(['#A8B820', '#705848', '#7038F8', '#F8D030', '#EE99AC',
+                '#C03028', '#F08030', '#A890F0', '#705898', '#78C850',
+                '#E0C068', '#98D8D8', '#A8A878', '#A040A0', '#F85888',
+                '#B8A038', '#B8B8D0', '#6890F0'])
 
         // Initialize the circle: all located at the center of the svg area
         let node = svg.append("g")
