@@ -1,3 +1,7 @@
+body {
+    overflow-x: hidden;
+}
+
 circle {
     stroke: white;
     fill: #05668D;
@@ -19,7 +23,9 @@ h7 {
     padding-top: 1.1em;
     padding-left: 2.5em;
 }
-
+.my-legend .legend-labels {
+    width: 100%;
+}
 .my-legend .legend-title {
     font-family: "Major Mono Display", sans-serif;
     text-align: left;
@@ -33,11 +39,12 @@ h7 {
     padding: 0;
     float: left;
     list-style: none;
+    width: 100%;
 }
 .my-legend .legend-colours ul li {
     display: block;
     float: left;
-    width: 50px;
+    width: 4.75%;
     margin-bottom: 6px;
     text-align: center;
     font-size: 80%;
@@ -47,7 +54,7 @@ h7 {
     display: block;
     float: left;
     height: 15px;
-    width: 50px;
+    width: 100%;
 }
 .my-legend .legend-source {
     font-size: 70%;
