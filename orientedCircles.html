@@ -6,6 +6,7 @@
     <link rel="stylesheet" type="text/css" href="style.css" />
     <link rel="stylesheet" type="text/css" href="OrientedCircleStyle.css">
     <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="radar-chart.js"></script>
 </head>
 
 <body>
@@ -42,6 +43,7 @@
         </div>
     </div>
     <div id="my_dataviz"></div>
+    <div id="radar_chart"/>
 </div>
 
 <script>
@@ -56,12 +58,44 @@
         .attr("width", "150%")
         .attr("height", height)
 
+    var radarQueue = [];
+
+    let emptyOptions = [{
+            axes: [
+                {axis: "HP"},
+                {axis: "Attack"},
+                {axis: "Defense"},
+                {axis: "Special Attack"},
+                {axis: "Special Defense"},
+                {axis: "Speed"}
+            ]}
+        ]
+
+    var radarChartOptions = {
+        w: 350,
+        h: 350,
+        levels: 5,
+        labelFactor: 1.05,
+        format: '.0f',
+        dotRadius: 6,
+        color: d3.scaleOrdinal().range(["#4ac53a", "#ff6600", "#2a2fd4"])
+    };
+
+    var svg_radar1 = RadarChart("#radar_chart", emptyOptions, radarChartOptions);
+
     // create dummy data -> just one element per circle
     d3.csv("Pokemon.csv", function(d) {
         return {
             name: d.Name,
             type: d.Type1,
-            gen: d.Generation
+            gen: d.Generation,
+            strength: d.Total,
+            hp: d.HP,
+            attack: d.Attack,
+            defense: d.Defense,
+            spAtk: d.SpAtk,
+            spDef: d.SpDef,
+            speed: d.Speed
         };
     }).then(function(internalData) {
         // A scale that gives a X target position for each group
@@ -93,9 +127,11 @@
             .attr("r", radius)
             .attr("cx", width / 2)
             .attr("cy", height / 2)
+            .attr("id", function(d) { return d.name })       // to select nodes by ID
             .style("fill", function(d){return color(d.type)})
             .attr("stroke", "black")
             .style("stroke-width", 2)
+            .on("click", clicked)
             .call(d3.drag() // call specific function when circle is dragged
                 .on("start", dragstarted)
                 .on("drag", dragged)
@@ -135,7 +171,68 @@
             d.fy = null;
         }
 
+        function clicked(d, i) {
+            if (d3.event.defaultPrevented) return; // dragged
+
+            // Node is not present in our queue
+            if(!radarQueue.includes(d)) {
+                // Max size reached, remove first added element
+                if(radarQueue.length > 1) {
+                    let node = radarQueue.shift()
+                    selectNodeByName(node.name).attr("r", radius)
+                }
+                radarQueue.push(d)
+                selectNodeByName(d.name).attr("r", radius * 1.5)
+            }
+            // Node is present and will be removed from the queue
+            else {
+                var index = radarQueue.indexOf(d);
+                if (index > -1) {
+                    radarQueue.splice(index, 1);
+                    selectNodeByName(d.name).attr("r", radius)
+                }
+            }
+            // Radar ends up being empty
+            if (radarQueue === undefined || radarQueue.length == 0) {
+                radarChartOptions.legend = false
+                svg_radar1 = RadarChart("#radar_chart", emptyOptions, radarChartOptions)
+            }
+            else {
+                radarChartOptions.legend = {title: "Pokemon", translateX: -415, translateY: 0 }
+                var radar = generateRadarChartParams(radarQueue)
+                svg_radar1 = RadarChart("#radar_chart", radar, radarChartOptions);
+            }
+        }
     })
+
+    function generateRadarChartParams(queue) {
+        var radarParams = []
+
+        for(let i in queue) {
+            radarParams.push({
+                name: queue[i].name,
+                axes: [
+                    {axis: "HP", value: queue[i].hp},
+                    {axis: "Attack", value: queue[i].attack},
+                    {axis: "Defense", value: queue[i].defense},
+                    {axis: "Special Attack", value: queue[i].spAtk},
+                    {axis: "Special Defense", value: queue[i].spDef},
+                    {axis: "Speed", value: queue[i].speed}
+                ]
+            })
+        }
+
+        return radarParams
+    }
+
+    function selectNodeByName(name) {
+        var node = d3.selectAll("circle").filter(function (d) {
+            if(d.name === name) {
+                return d.name === name
+            }
+        })
+        return node
+    }
 
     function fractionalScale(numerator) {
         if(numerator === 0)
