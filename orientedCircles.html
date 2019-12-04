@@ -54,7 +54,7 @@
     let svg = d3.select("#my_dataviz")
         .append("svg")
         .attr("width", "150%")
-        .attr("height", height)
+        .attr("height", height+10)
         .style("margin-left", "10px")
 
     // create dummy data -> just one element per circle
@@ -71,10 +71,10 @@
         let x = d3.scaleOrdinal()
             .domain(["Bug", "Dark", "Dragon", "Electric", "Fairy", "Fighting", "Fire", "Flying", "Ghost",
                 "Grass", "Ground", "Ice", "Normal", "Poison", "Psychic", "Rock", "Steel", "Water"])
-            .range([fractionalScale(0), fractionalScale(1), fractionalScale(2), fractionalScale(3)-50, fractionalScale(4)-100,
-                fractionalScale(5)-100, fractionalScale(6)-100, fractionalScale(7)-50, fractionalScale(8)-100, fractionalScale(9)-100,
-                fractionalScale(10)-100, fractionalScale(11)-100, fractionalScale(12)-100, fractionalScale(13)-100, fractionalScale(14)-100,
-                fractionalScale(15)-100, fractionalScale(16)-150, fractionalScale(17)-100])
+            .range([fractionalScale(0), fractionalScale(1), fractionalScale(2), fractionalScale(3), fractionalScale(4),
+                fractionalScale(5), fractionalScale(6), fractionalScale(7), fractionalScale(8), fractionalScale(9),
+                fractionalScale(10), fractionalScale(11), fractionalScale(12), fractionalScale(13), fractionalScale(14),
+                fractionalScale(15), fractionalScale(16), fractionalScale(17)])
 
         let y = d3.scaleLinear()
             .domain([6,1])
@@ -118,16 +118,17 @@
         var yRange = d3.scaleLinear().domain([1,6])
             .range([height,0]);
 
-        var y_axis = d3.axisLeft().scale(yRange).ticks(6);
+        var y_axis = d3.axisRight().scale(yRange).ticks(6);
 
         svg.append("g")
-            .attr("transform", "translate(50,10)")
+            .attr("transform", "translate(1560,5)")
+            .attr("height", height)
             .call(y_axis);
 
 
         svg.append("text")
             .attr("transform", "rotate(-90)")
-            .attr("y", 0)
+            .attr("y", 1575)
             .attr("x",0 - (height / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
@@ -139,9 +140,8 @@
 
         // Features of the forces applied to the nodes:
         let simulation = d3.forceSimulation()
-            .force("x", d3.forceX().strength(1.1).x( function(d){ return x(d.type)}))
-            .force("y", d3.forceY().strength(1.1).y( function(d){ return y(parseInt(d.gen))}))
-            .force("center", d3.forceCenter().x(width / 2).y(height / 2)) // Attraction to the center of the svg area
+            .force("x", d3.forceX().strength(1.9).x( function(d){ return x(d.type)}))
+            .force("y", d3.forceY().strength(2).y( function(d){ return y(parseInt(d.gen))}))
             .force("charge", d3.forceManyBody().strength(10)) // Nodes are attracted one each other of value is > 0
             .force("collide", d3.forceCollide().strength(.1).radius(16).iterations(1)) // Force that avoids circle overlapping
 
@@ -153,16 +153,17 @@
                 node
                     .attr("cx", function(d) { return d.x = Math.max(radius, Math.min(width - radius, d.x)); })
                     .attr("cy", function(d) { return d.y = Math.max(radius, Math.min(height - radius, d.y)); });
-            });
+            })
+            .alphaTarget(.015);
 
 
     })
 
     function fractionalScale(numerator) {
         if(numerator === 0)
-            return 200
+            return 30
         else
-            return (numerator/18 * width) + 200;
+            return (numerator/18 * width) + 50;
     }
 
 </script>
