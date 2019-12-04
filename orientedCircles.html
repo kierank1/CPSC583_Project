@@ -60,8 +60,23 @@
         .attr("height", height)
 
     var arcGenerator = d3.arc()
-        .innerRadius(150)
-        .outerRadius(900);
+        .innerRadius(100)
+        .outerRadius(1000);
+
+    var fancyArcs = []
+
+    for( var i = 0; i < 5; i++) {
+        fancyArcs[i] = d3.arc().innerRadius(300 + (i*100) ).outerRadius(500 + (i * 100))
+    }
+
+    // Handmade legend
+    svg.append("text").attr("x", 815).attr("y", 40).text("Strength Legend").style("font-size", "18px").style("font-weight", "bold").attr("alignment-baseline","middle")
+    svg.append("circle").attr("cx",920).attr("cy",60).attr("r",  200 / 45).style("fill", "#404080")
+    svg.append("circle").attr("cx",920).attr("cy",80).attr("r", 400 / 45).style("fill", "#404080")
+    svg.append("circle").attr("cx",920).attr("cy",108).attr("r", 600 / 45).style("fill", "#404080")
+    svg.append("text").attr("x", 940).attr("y", 60).text("200").style("font-size", "15px").attr("alignment-baseline","middle")
+    svg.append("text").attr("x", 940).attr("y", 80).text("400").style("font-size", "15px").attr("alignment-baseline","middle")
+    svg.append("text").attr("x", 940).attr("y", 108).text("600").style("font-size", "15px").attr("alignment-baseline","middle")
 
     // create dummy data -> just one element per circle
     d3.csv("Pokemon.csv", function(d) {
@@ -81,8 +96,6 @@
                 arcCentroidGeneration(5), arcCentroidGeneration(6), arcCentroidGeneration(7), arcCentroidGeneration(8), arcCentroidGeneration(9),
                 arcCentroidGeneration(10), arcCentroidGeneration(11), arcCentroidGeneration(12), arcCentroidGeneration(13), arcCentroidGeneration(14),
                 arcCentroidGeneration(15), arcCentroidGeneration(16), arcCentroidGeneration(17)])
-
-        console.log(arcGenerator.centroid((arcCentroids("Bug"))))
 
         // A color scale
         let color = d3.scaleOrdinal()
@@ -110,52 +123,71 @@
             .style("fill-opacity", 1.0)
             .attr("stroke", "black")
             .style("stroke-width", 2)
+            .call(d3.drag() // call specific function when circle is dragged
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
 
         // Features of the forces applied to the nodes:
         let simulation = d3.forceSimulation()
-            .force("x", d3.forceX().strength(2).x( function(d){
-                return arcGenerator.centroid((arcCentroids(d.type)))[0] / 2 }
-                ))
-            .force("y", d3.forceY().strength(2).y( function(d){
-                console.log(d)
-                return arcGenerator.centroid((arcCentroids(d.type)))[1] / 2}
+            .force("x", d3.forceX().strength(5).x( function(d){
+                return fancyArcs[strengthToRadiusMapping(d.strength)].centroid((arcCentroids(d.type)))[0] / 2.5 }
             ))
+            .force("y", d3.forceY().strength(5).y( function(d){
+                return fancyArcs[strengthToRadiusMapping(d.strength)].centroid((arcCentroids(d.type)))[1] / 2.5 }
+            ))
+
             .force("center", d3.forceCenter().x(width / 2).y(height / 2)) // Attraction to the center
-            .force("charge", d3.forceManyBody().strength(25)) // Nodes are attracted one each other of value is > 0
-            .force("collide", d3.forceCollide().strength(.15).radius(function(d){return (Math.log(d.strength) - 4.8) * 26}).iterations(1)) // Force that avoids circle overlapping
+            .force("charge", d3.forceManyBody().strength(5)) // Nodes are attracted one each other of value is > 0
+            .force("collide", d3.forceCollide().strength(.1).radius(function(d){return (Math.log(d.strength) - 4.8) * 26}).iterations(2)) // Force that avoids circle overlapping
 
         // Apply these forces to the nodes and update their positions.
         // Once the force algorithm is happy with positions ('alpha' value is low enough), simulations will stop.
 
-
-        const simulationDurationInMs = 5000;
-        let startTime = Date.now();
-        let endTime = startTime + simulationDurationInMs;
-
-        function onSimulationTick() {
-            if (Date.now() < endTime) {
-                /*update the simulation*/
-            } else {
-                simulation.stop();
-            }
-        }
-
+        // Apply these forces to the nodes and update their positions.
+        // Once the force algorithm is happy with positions ('alpha' value is low enough), simulations will stop.
         simulation
             .nodes(data)
             .on("tick", function(d){
-                if((Date.now() < endTime)) {
-                    node.attr("cx", function (d) {return d.x = Math.max(radius, Math.min(width - radius, d.x));})
-                        .attr("cy", function (d) {return d.y = Math.max(radius, Math.min(height - radius, d.y));})
-                }
-                else {
-                    simulation.stop()
-                }
+                node
+                    .attr("cx", function(d) { return d.x = Math.max(radius, Math.min(width - radius, d.x)); })
+                    .attr("cy", function(d) { return d.y = Math.max(radius, Math.min(height - radius, d.y)); });
             });
+        // What happens when a circle is dragged?
+        function dragstarted(d) {
+            if (!d3.event.active) simulation.alphaTarget(.01).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+        function dragged(d) {
+            d.fx = d3.event.x;
+            d.fy = d3.event.y;
+        }
+        function dragended(d) {
+            if (!d3.event.active) simulation.alphaTarget(.01);
+            d.fx = null;
+            d.fy = null;
+        }
     })
 
     function arcCentroidGeneration(numerator) {
         return { startAngle: (ARC_LENGTH * numerator), endAngle: (ARC_LENGTH * numerator) + ARC_LENGTH }
     }
+
+    function strengthToRadiusMapping(strength) {
+        if (strength <= 300)
+            return 0
+        else if(strength > 300 && strength <= 400)
+            return 1
+        else if(strength > 400 && strength <= 500)
+            return 2
+        else if(strength > 500 && strength <= 600)
+            return 3
+        else if(strength > 600 && strength <= 800)
+            return 4
+    }
+
+
 
 </script>
 
