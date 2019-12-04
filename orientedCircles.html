@@ -212,7 +212,7 @@
             if(!radarQueue.includes(d)) {
                 // Max size reached, remove first added element
                 if(radarQueue.length > 1) {
-                    node = radarQueue.shift()
+                    node = selectNodeByName(radarQueue.shift().name)
                     highlightNode(node, false)
                 }
                 radarQueue.push(d)
