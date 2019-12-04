@@ -54,7 +54,8 @@
     let svg = d3.select("#my_dataviz")
         .append("svg")
         .attr("width", "150%")
-        .attr("height", height)
+        .attr("height", height+10)
+        .style("margin-left", "10px")
 
     // create dummy data -> just one element per circle
     d3.csv("Pokemon.csv", function(d) {
@@ -70,10 +71,17 @@
         let x = d3.scaleOrdinal()
             .domain(["Bug", "Dark", "Dragon", "Electric", "Fairy", "Fighting", "Fire", "Flying", "Ghost",
                 "Grass", "Ground", "Ice", "Normal", "Poison", "Psychic", "Rock", "Steel", "Water"])
-            .range([fractionalScale(0)+50, fractionalScale(1), fractionalScale(2), fractionalScale(3), fractionalScale(4),
+            .range([fractionalScale(0), fractionalScale(1), fractionalScale(2), fractionalScale(3), fractionalScale(4),
                 fractionalScale(5), fractionalScale(6), fractionalScale(7), fractionalScale(8), fractionalScale(9),
                 fractionalScale(10), fractionalScale(11), fractionalScale(12), fractionalScale(13), fractionalScale(14),
                 fractionalScale(15), fractionalScale(16), fractionalScale(17)])
+
+        let y = d3.scaleLinear()
+            .domain([6,1])
+            .range([20,520])
+
+
+
 
         // A color scale
         let color = d3.scaleOrdinal()
@@ -83,6 +91,9 @@
                 '#C03028', '#F08030', '#A890F0', '#705898', '#78C850',
                 '#E0C068', '#98D8D8', '#A8A878', '#A040A0', '#F85888',
                 '#B8A038', '#B8B8D0', '#6890F0'])
+
+
+
 
         // Initialize the circle: all located at the center of the svg area
         let node = svg.append("g")
@@ -96,18 +107,43 @@
             .style("fill", function(d){return color(d.type)})
             .attr("stroke", "black")
             .style("stroke-width", 2)
-            .call(d3.drag() // call specific function when circle is dragged
-                .on("start", dragstarted)
-                .on("drag", dragged)
-                .on("end", dragended));
+            .on("click",function(d){console.log(d.type,d.gen)})
+
+        // // Add scales to axis
+        // var y_axis = d3.axisLeft()
+        //     .scale(y);
+        //
+        // svg.append("g").call(y_axis);
+
+        var yRange = d3.scaleLinear().domain([1,6])
+            .range([height,0]);
+
+        var y_axis = d3.axisRight().scale(yRange).ticks(6);
+
+        svg.append("g")
+            .attr("transform", "translate(1560,5)")
+            .attr("height", height)
+            .call(y_axis);
+
+
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 1575)
+            .attr("x",0 - (height / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .style("font-family", "'Major Mono Display' , sans-serif")
+            .style("font-size", "18px")
+            .style("font-weight", "bold")
+            .style("margin-right", "20px")
+            .text("Generation");
 
         // Features of the forces applied to the nodes:
         let simulation = d3.forceSimulation()
-            .force("x", d3.forceX().strength(2).x( function(d){return x(d.type) } ))
-            .force("y", d3.forceY().strength(0.5).y( height/2 ))
-            .force("center", d3.forceCenter().x(width / 2).y(height / 2)) // Attraction to the center of the svg area
-            .force("charge", d3.forceManyBody().strength(15)) // Nodes are attracted one each other of value is > 0
-            .force("collide", d3.forceCollide().strength(.2).radius(16).iterations(1)) // Force that avoids circle overlapping
+            .force("x", d3.forceX().strength(1.9).x( function(d){ return x(d.type)}))
+            .force("y", d3.forceY().strength(2).y( function(d){ return y(parseInt(d.gen))}))
+            .force("charge", d3.forceManyBody().strength(10)) // Nodes are attracted one each other of value is > 0
+            .force("collide", d3.forceCollide().strength(.1).radius(16).iterations(1)) // Force that avoids circle overlapping
 
         // Apply these forces to the nodes and update their positions.
         // Once the force algorithm is happy with positions ('alpha' value is low enough), simulations will stop.
@@ -117,31 +153,17 @@
                 node
                     .attr("cx", function(d) { return d.x = Math.max(radius, Math.min(width - radius, d.x)); })
                     .attr("cy", function(d) { return d.y = Math.max(radius, Math.min(height - radius, d.y)); });
-            });
+            })
+            .alphaTarget(.015);
 
-        // What happens when a circle is dragged?
-        function dragstarted(d) {
-            if (!d3.event.active) simulation.alphaTarget(.01).restart();
-            d.fx = d.x;
-            d.fy = d.y;
-        }
-        function dragged(d) {
-            d.fx = d3.event.x;
-            d.fy = d3.event.y;
-        }
-        function dragended(d) {
-            if (!d3.event.active) simulation.alphaTarget(.01);
-            d.fx = null;
-            d.fy = null;
-        }
 
     })
 
     function fractionalScale(numerator) {
         if(numerator === 0)
-            return 200
+            return 30
         else
-            return (numerator/18 * width) + 200;
+            return (numerator/18 * width) + 50;
     }
 
 </script>
