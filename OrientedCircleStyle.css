@@ -25,6 +25,7 @@ h7 {
 }
 .my-legend .legend-labels {
     width: 100%;
+    font-weight: bold;
 }
 .my-legend .legend-title {
     font-family: "Major Mono Display", sans-serif;
@@ -32,6 +33,7 @@ h7 {
     margin-bottom: 8px;
     letter-spacing: normal;
     text-transform: lowercase;
+    font-size: 20px;
     font-weight: bold;
 }
 .my-legend .legend-colours ul {
@@ -44,7 +46,7 @@ h7 {
 .my-legend .legend-colours ul li {
     display: block;
     float: left;
-    width: 4.75%;
+    width: 5.4%;
     margin-bottom: 6px;
     text-align: center;
     font-size: 80%;
