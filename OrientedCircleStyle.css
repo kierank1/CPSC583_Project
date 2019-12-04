@@ -3,11 +3,9 @@ body {
 }
 
 circle {
-    stroke: white;
-    fill: #05668D;
     opacity: 1.0;
-    stroke-width: 1px;
 }
+
 h2 {
     text-align: left;
     float: left;

@@ -48,7 +48,7 @@
 
 <script>
 
-    let width = 1550;
+    let width = 1624;
     let height = 560
     let radius = 10;
 
@@ -58,6 +58,7 @@
         .attr("width", "150%")
         .attr("height", height+10)
         .style("margin-left", "10px")
+        .style("margin-right", "10px")
 
     var radarQueue = [];
 
@@ -105,7 +106,7 @@
         let x = d3.scaleOrdinal()
             .domain(["Bug", "Dark", "Dragon", "Electric", "Fairy", "Fighting", "Fire", "Flying", "Ghost",
                 "Grass", "Ground", "Ice", "Normal", "Poison", "Psychic", "Rock", "Steel", "Water"])
-            .range([fractionalScale(0)+50, fractionalScale(1), fractionalScale(2), fractionalScale(3), fractionalScale(4),
+            .range([fractionalScale(0), fractionalScale(1), fractionalScale(2), fractionalScale(3), fractionalScale(4),
                 fractionalScale(5), fractionalScale(6), fractionalScale(7), fractionalScale(8), fractionalScale(9),
                 fractionalScale(10), fractionalScale(11), fractionalScale(12), fractionalScale(13), fractionalScale(14),
                 fractionalScale(15), fractionalScale(16), fractionalScale(17)])
@@ -138,7 +139,7 @@
             .attr("cy", height / 2)
             .attr("id", function(d) { return d.name })       // to select nodes by ID
             .style("fill", function(d){return color(d.type)})
-            .attr("stroke", "black")
+            .attr("stroke", "white")
             .style("stroke-width", 2)
             .on("click", clicked)
             .call(d3.drag() // call specific function when circle is dragged
@@ -152,15 +153,14 @@
         var y_axis = d3.axisRight().scale(yRange).ticks(6);
 
         svg.append("g")
-            .attr("transform", "translate(1560,5)")
+            .attr("transform", "translate(1660,5)")
             .attr("height", height)
             .call(y_axis);
 
-
         svg.append("text")
             .attr("transform", "rotate(-90)")
-            .attr("y", 1575)
-            .attr("x",0 - (height / 2))
+            .attr("y", 1680)
+            .attr("x", 0 - (height / 2))
             .attr("dy", "1em")
             .style("text-anchor", "middle")
             .style("font-family", "'Major Mono Display' , sans-serif")
@@ -174,7 +174,7 @@
             .force("x", d3.forceX().strength(1.5).x( function(d){ return x(d.type)}))
             .force("y", d3.forceY().strength(1.5).y( function(d){ return y(parseInt(d.gen))}))
             .force("charge", d3.forceManyBody().strength(10)) // Nodes are attracted one each other of value is > 0
-            .force("collide", d3.forceCollide().strength(.1).radius(function(d){return  size(d.strength) + 3 }).iterations(2)) // Force that avoids circle overlapping
+            .force("collide", d3.forceCollide().strength(.5).radius(function(d){return  size(d.strength) + 3 }).iterations(2)) // Force that avoids circle overlapping
 
         // Apply these forces to the nodes and update their positions.
         // Once the force algorithm is happy with positions ('alpha' value is low enough), simulations will stop.
@@ -206,7 +206,6 @@
         function clicked(d, i) {
             if (d3.event.defaultPrevented) return; // dragged
 
-            var radius = 0
             var node = null
 
             // Node is not present in our queue
@@ -214,13 +213,11 @@
                 // Max size reached, remove first added element
                 if(radarQueue.length > 1) {
                     node = radarQueue.shift()
-                    radius = getNodeRadius(node)
-                    node.attr("r", radius / 1.5)
+                    highlightNode(node, false)
                 }
                 radarQueue.push(d)
                 node = selectNodeByName(d.name)
-                radius = getNodeRadius(node)
-                node.attr("r", radius * 1.5)
+                highlightNode(node, true)
             }
             // Node is present and will be removed from the queue
             else {
@@ -228,8 +225,7 @@
                 if (index > -1) {
                     radarQueue.splice(index, 1);
                     node = selectNodeByName(d.name)
-                    radius = getNodeRadius(node)
-                    node.attr("r", radius / 1.5)
+                    highlightNode(node, false)
                 }
             }
             // Radar ends up being empty
@@ -274,15 +270,29 @@
         return node
     }
 
+    function highlightNode(node, highlight) {
+        var radius = getNodeRadius(node)
+        if(highlight) {
+            node.attr("r", radius * 1.5)
+                .attr("stroke", "black")
+                .attr("stroke-width", "4px")
+        }
+        else {
+            node.attr("r", radius / 1.5)
+                .attr("stroke", "white")
+                .attr("stroke-width", "2px")
+        }
+    }
+
     function getNodeRadius(node) {
         return node.attr("r")
     }
 
     function fractionalScale(numerator) {
         if(numerator === 0)
-            return 30
+            return 50
         else
-            return (numerator/18 * width) + 50;
+            return (numerator/18 * width) + 55;
     }
 
 </script>
