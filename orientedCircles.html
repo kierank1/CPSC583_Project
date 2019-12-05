@@ -10,6 +10,14 @@
 </head>
 
 <body>
+
+<form name="myform" onSubmit="return handleClick()">
+
+    <input name="Submit"  type="submit" value="Search for Pokemon" >
+    <input type="text" id="myVal" placeholder="Enter Pokemon's Name&hellip;">
+
+</form>
+
 <h1>Pokemon & Their Types</h1>
 <div id="div_page_desc">
     <p>Encompasses Pokemon and which type they fall under: Bug, Dark, Dragon, etc.</p>
@@ -78,6 +86,35 @@
 
     var radarChartOptions = {
         w: 900,
+        h: 350,
+        levels: 5,
+        labelFactor: 1.05,
+        format: '.0f',
+        dotRadius: 6,
+        color: d3.scaleOrdinal().range(["#4ac53a", "#ff6600", "#2a2fd4"])
+    };
+
+    var svg_radar1 = RadarChart("#radar_chart", emptyOptions, radarChartOptions);
+        .attr("width", "150%")
+        .attr("height", height+10)
+        .style("margin-left", "10px")
+        .style("margin-right", "10px")
+
+    var radarQueue = [];
+
+    let emptyOptions = [{
+            axes: [
+                {axis: "HP"},
+                {axis: "Attack"},
+                {axis: "Defense"},
+                {axis: "Special Attack"},
+                {axis: "Special Defense"},
+                {axis: "Speed"}
+            ]}
+        ]
+
+    var radarChartOptions = {
+        w: 350,
         h: 350,
         levels: 5,
         labelFactor: 1.05,
@@ -335,9 +372,62 @@
             return 50
         else
             return (numerator/18 * width) + 55;
+            return (numerator/18 * width) + 55;
     }
 
+    var dataset = [];
 
+    function searchForPokemon(name) {
+
+        // A color scale
+        let color = d3.scaleOrdinal()
+            .domain(["Bug", "Dark", "Dragon", "Electric", "Fairy", "Fighting", "Fire", "Flying", "Ghost",
+                "Grass", "Ground", "Ice", "Normal", "Poison", "Psychic", "Rock", "Steel", "Water"])
+            .range(['#A8B820', '#705848', '#7038F8', '#F8D030', '#EE99AC',
+                '#C03028', '#F08030', '#A890F0', '#705898', '#78C850',
+                '#E0C068', '#98D8D8', '#A8A878', '#A040A0', '#F85888',
+                '#B8A038', '#B8B8D0', '#6890F0'])
+
+        var node = d3.selectAll("circle").filter(function (d) {
+            if(d.name != name) {
+
+                var node2 = selectNodeByName(d.name)
+                node2.style("fill", "#808080")
+
+            }
+
+        })
+
+        setTimeout(function() {
+
+            var node = d3.selectAll("circle").filter(function (d) {
+                if(d.name != name) {
+
+                    var node2 = selectNodeByName(d.name)
+                    node2 .style("fill", function(d){return color(d.type)})
+
+                }
+
+            })
+
+        } , 5000)
+
+        return node
+    }
+
+    function handleClick(event){
+
+        var name = document.getElementById("myVal").value
+
+        console.log(name);
+        if(name == ''){
+            return false;
+        }
+        var node = searchForPokemon(name)
+
+
+        return false;
+    }
 
 </script>
 
