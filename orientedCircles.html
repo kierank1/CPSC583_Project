@@ -17,7 +17,9 @@
 <div id="div_visuals" style="min-height: 0px;">
     <div id="div_data_desc">
         <div class='my-legend'>
-            <div class='legend-title'>All Pokemon Types</div>
+            <div class='legend-title'>All Pokemon Types
+                <button type="button" id="toggleButton" style="float: right;">Toggle Types</button>
+            </div>
             <div class='legend-colours'>
                 <ul class='legend-labels'>
                     <li><span style='background:#A8B820;'></span>Bug</li>
@@ -51,6 +53,7 @@
     let width = 1624;
     let height = 560
     let radius = 10;
+    var primaryTyping = true;
 
     // append the svg object to the body of the page
     let svg = d3.select("#my_dataviz")
@@ -90,6 +93,7 @@
         return {
             name: d.Name,
             type: d.Type1,
+            type2: d.Type2,
             gen: d.Generation,
             strength: d.Total,
             hp: d.HP,
@@ -100,9 +104,10 @@
             speed: d.Speed
         };
     }).then(function(internalData) {
-        // A scale that gives a X target position for each group
         let data = internalData;
 
+        // ** SETTING UP SCALES ** //
+        // x position
         let x = d3.scaleOrdinal()
             .domain(["Bug", "Dark", "Dragon", "Electric", "Fairy", "Fighting", "Fire", "Flying", "Ghost",
                 "Grass", "Ground", "Ice", "Normal", "Poison", "Psychic", "Rock", "Steel", "Water"])
@@ -110,7 +115,7 @@
                 fractionalScale(5), fractionalScale(6), fractionalScale(7), fractionalScale(8), fractionalScale(9),
                 fractionalScale(10), fractionalScale(11), fractionalScale(12), fractionalScale(13), fractionalScale(14),
                 fractionalScale(15), fractionalScale(16), fractionalScale(17)])
-
+        // y position
         let y = d3.scaleLinear()
             .domain([6,1])
             .range([20,520])
@@ -124,68 +129,88 @@
                 '#E0C068', '#98D8D8', '#A8A878', '#A040A0', '#F85888',
                 '#B8A038', '#B8B8D0', '#6890F0'])
 
+        // A size scale
         let size = d3.scaleLinear()
             .domain([200, 800])
             .range([5, 15]);
 
-        // Initialize the circle: all located at the center of the svg area
-        let node = svg.append("g")
-            .selectAll("circle")
-            .data(data)
-            .enter()
-            .append("circle")
-            .attr("r", function(d) { return size(d.strength)})
-            .attr("cx", width / 2)
-            .attr("cy", height / 2)
-            .attr("id", function(d) { return d.name })       // to select nodes by ID
-            .style("fill", function(d){return color(d.type)})
-            .attr("stroke", "white")
-            .style("stroke-width", 2)
-            .on("click", clicked)
-            .call(d3.drag() // call specific function when circle is dragged
-                .on("start", dragstarted)
-                .on("drag", dragged)
-                .on("end", dragended));
+        d3.select("#toggleButton").on("click", toggleTypes)
 
-        var yRange = d3.scaleLinear().domain([1,6])
-            .range([height,0]);
+        var simulation = d3.forceSimulation()
 
-        var y_axis = d3.axisRight().scale(yRange).ticks(6);
+        createSimulation()
+        function createSimulation() {
+            setupAxes()
+            // Initialize the circle: all located at the center of the svg area
+            let node = svg.append("g")
+                .selectAll("circle")
+                .data(data)
+                .enter()
+                .append("circle")
+                .attr("r", function(d) { return size(d.strength)})
+                .attr("cx", width / 2)
+                .attr("cy", height / 2)
+                .attr("id", function(d) { return d.name })       // to select nodes by ID
+                .style("fill", function(d){
+                    if(primaryTyping)
+                        return color(d.type)
+                    else
+                        return color(d.type2)
+                })
+                .attr("stroke", "white")
+                .style("stroke-width", 2)
+                .on("click", clicked)
+                .call(d3.drag() // call specific function when circle is dragged
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
 
-        svg.append("g")
-            .attr("transform", "translate(1660,5)")
-            .attr("height", height)
-            .call(y_axis);
+            // Features of the forces applied to the nodes:
+            simulation.force("x", d3.forceX().strength(2.5).x( function(d){
+                if(primaryTyping)
+                    return x(d.type)
+                else
+                    return x(d.type2)
+            }))
+                .force("y", d3.forceY().strength(2.5).y( function(d){ return y(parseInt(d.gen))}))
+                .force("charge", d3.forceManyBody().strength(10)) // Nodes are attracted one each other of value is > 0
+                .force("collide", d3.forceCollide().strength(.5).radius(function(d){return  size(d.strength) + 3 }).iterations(2)) // Force that avoids circle overlapping
 
-        svg.append("text")
-            .attr("transform", "rotate(-90)")
-            .attr("y", 1680)
-            .attr("x", 0 - (height / 2))
-            .attr("dy", "1em")
-            .style("text-anchor", "middle")
-            .style("font-family", "'Major Mono Display' , sans-serif")
-            .style("font-size", "18px")
-            .style("font-weight", "bold")
-            .style("margin-right", "20px")
-            .text("Generation");
+            // Apply these forces to the nodes and update their positions.
+            // Once the force algorithm is happy with positions ('alpha' value is low enough), simulations will stop.
+            simulation
+                .nodes(data)
+                .on("tick", function(d){
+                    node
+                        .attr("cx", function(d) { return d.x = Math.max(radius, Math.min(width - radius, d.x)); })
+                        .attr("cy", function(d) { return d.y = Math.max(radius, Math.min(height - radius, d.y)); });
+                })
+                .alphaTarget(.015);
+        }
 
-        // Features of the forces applied to the nodes:
-        let simulation = d3.forceSimulation()
-            .force("x", d3.forceX().strength(1.5).x( function(d){ return x(d.type)}))
-            .force("y", d3.forceY().strength(1.5).y( function(d){ return y(parseInt(d.gen))}))
-            .force("charge", d3.forceManyBody().strength(10)) // Nodes are attracted one each other of value is > 0
-            .force("collide", d3.forceCollide().strength(.5).radius(function(d){return  size(d.strength) + 3 }).iterations(2)) // Force that avoids circle overlapping
+        function setupAxes() {
+            var yRange = d3.scaleLinear().domain([1,6])
+                .range([height,0]);
 
-        // Apply these forces to the nodes and update their positions.
-        // Once the force algorithm is happy with positions ('alpha' value is low enough), simulations will stop.
-        simulation
-            .nodes(data)
-            .on("tick", function(d){
-                node
-                    .attr("cx", function(d) { return d.x = Math.max(radius, Math.min(width - radius, d.x)); })
-                    .attr("cy", function(d) { return d.y = Math.max(radius, Math.min(height - radius, d.y)); });
-            })
-            .alphaTarget(.015);
+            var y_axis = d3.axisRight().scale(yRange).ticks(6);
+
+            svg.append("g")
+                .attr("transform", "translate(1660,5)")
+                .attr("height", height)
+                .call(y_axis);
+
+            svg.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 1680)
+                .attr("x", 0 - (height / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .style("font-family", "'Major Mono Display' , sans-serif")
+                .style("font-size", "18px")
+                .style("font-weight", "bold")
+                .style("margin-right", "20px")
+                .text("Generation");
+        }
 
         // What happens when a circle is dragged?
         function dragstarted(d) {
@@ -238,6 +263,13 @@
                 var radar = generateRadarChartParams(radarQueue)
                 svg_radar1 = RadarChart("#radar_chart", radar, radarChartOptions);
             }
+        }
+
+        function toggleTypes() {
+            var newTyping = !primaryTyping
+            primaryTyping = newTyping
+            svg.selectAll("*").remove();
+            createSimulation()
         }
     })
 
@@ -294,6 +326,8 @@
         else
             return (numerator/18 * width) + 55;
     }
+
+
 
 </script>
 
