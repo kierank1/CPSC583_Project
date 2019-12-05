@@ -11,13 +11,6 @@
 
 <body>
 
-<form name="myform" onSubmit="return handleClick()">
-
-    <input name="Submit"  type="submit" value="Search for Pokemon" >
-    <input type="text" id="myVal" placeholder="Enter Pokemon's Name&hellip;">
-
-</form>
-
 <h1>Pokemon & Their Types</h1>
 <div id="div_page_desc">
     <p>Encompasses Pokemon and which type they fall under: Bug, Dark, Dragon, etc.</p>
@@ -25,9 +18,7 @@
 <div id="div_visuals" style="min-height: 0px;">
     <div id="div_data_desc">
         <div class='my-legend'>
-            <div class='legend-title'>All Pokemon Types
-                <button type="button" id="toggleButton" style="float: right;">Toggle Types</button>
-            </div>
+            <div class='legend-title'>All Pokemon Types</div>
             <div class='legend-colours'>
                 <ul class='legend-labels'>
                     <li><span style='background:#A8B820;'></span>Bug</li>
@@ -53,7 +44,16 @@
         </div>
     </div>
     <div id="my_dataviz"></div>
-    <div id="radar_chart"/>
+    <div id="radar_chart"><div/>
+    <div id="interaction_wrapper" style="float: right;">
+        <div id="search" style="padding: 10px">
+            <b style="color:black">Search For Pokemon:</b> <input type="text" id="searchValue" value="" placeholder="Enter Pokemon's Name&hellip;">
+        </div>
+        <div id="toggle" style="padding: 10px">
+            <button type="button" id="toggleButton" style="background-color: darkturquoise;">Toggle Types: Primary</button>
+        </div>
+    </div>
+    </div>
 </div>
 
 <script>
@@ -86,35 +86,6 @@
 
     var radarChartOptions = {
         w: 900,
-        h: 350,
-        levels: 5,
-        labelFactor: 1.05,
-        format: '.0f',
-        dotRadius: 6,
-        color: d3.scaleOrdinal().range(["#4ac53a", "#ff6600", "#2a2fd4"])
-    };
-
-    var svg_radar1 = RadarChart("#radar_chart", emptyOptions, radarChartOptions);
-        .attr("width", "150%")
-        .attr("height", height+10)
-        .style("margin-left", "10px")
-        .style("margin-right", "10px")
-
-    var radarQueue = [];
-
-    let emptyOptions = [{
-            axes: [
-                {axis: "HP"},
-                {axis: "Attack"},
-                {axis: "Defense"},
-                {axis: "Special Attack"},
-                {axis: "Special Defense"},
-                {axis: "Speed"}
-            ]}
-        ]
-
-    var radarChartOptions = {
-        w: 350,
         h: 350,
         levels: 5,
         labelFactor: 1.05,
@@ -172,6 +143,9 @@
             .range([5, 15]);
 
         d3.select("#toggleButton").on("click", toggleTypes)
+        d3.select("#searchValue")
+            .attr("transform", "translate(100,100)")
+            .on("input", searchForPokemon)
 
         var simulation = d3.forceSimulation()
 
@@ -312,6 +286,13 @@
         }
 
         function toggleTypes() {
+            if(primaryTyping) {
+                d3.select(this).text("Toggle Types: Secondary");
+            }
+            else {
+                d3.select(this).text("Toggle Types: Primary");
+            }
+
             var newTyping = !primaryTyping
             primaryTyping = newTyping
             svg.selectAll("*").remove()
@@ -375,10 +356,7 @@
             return (numerator/18 * width) + 55;
     }
 
-    var dataset = [];
-
-    function searchForPokemon(name) {
-
+    function searchForPokemon() {
         // A color scale
         let color = d3.scaleOrdinal()
             .domain(["Bug", "Dark", "Dragon", "Electric", "Fairy", "Fighting", "Fire", "Flying", "Ghost",
@@ -388,45 +366,27 @@
                 '#E0C068', '#98D8D8', '#A8A878', '#A040A0', '#F85888',
                 '#B8A038', '#B8B8D0', '#6890F0'])
 
-        var node = d3.selectAll("circle").filter(function (d) {
-            if(d.name != name) {
+        let search = this.value.toLowerCase()
 
-                var node2 = selectNodeByName(d.name)
-                node2.style("fill", "#808080")
-
+        svg.selectAll("circle").filter(function (d) {
+            console.log(this.value)
+            var node = selectNodeByName(d.name)
+            if(d.name.toLowerCase().includes(search)) {
+                node.style("fill", function(d){
+                    if(primaryTyping)
+                        return color(d.type)
+                    else {
+                        if(d.type2 !== "")
+                            return color(d.type2)
+                        else
+                            return color(d.type)
+                    }
+                })
             }
-
+            else {
+                node.style("fill", "#808080")
+            }
         })
-
-        setTimeout(function() {
-
-            var node = d3.selectAll("circle").filter(function (d) {
-                if(d.name != name) {
-
-                    var node2 = selectNodeByName(d.name)
-                    node2 .style("fill", function(d){return color(d.type)})
-
-                }
-
-            })
-
-        } , 5000)
-
-        return node
-    }
-
-    function handleClick(event){
-
-        var name = document.getElementById("myVal").value
-
-        console.log(name);
-        if(name == ''){
-            return false;
-        }
-        var node = searchForPokemon(name)
-
-
-        return false;
     }
 
 </script>
