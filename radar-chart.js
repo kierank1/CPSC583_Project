@@ -202,8 +202,6 @@ const RadarChart = function RadarChart(parent_selector, data, options) {
         .enter().append("g")
         .attr("class", "radarWrapper");
 
-    console.log(data)
-
     //Append the backgrounds
     blobWrapper
         .append("path")
@@ -299,7 +297,7 @@ const RadarChart = function RadarChart(parent_selector, data, options) {
                 .attr('transform', `translate(${cfg.legend.translateX},${cfg.legend.translateY})`)
                 .attr("x", cfg.w - 70)
                 .attr("y", 10)
-                .attr("font-size", "12px")
+                .attr("font-size", "24px")
                 .attr("fill", "#404040")
                 .text(cfg.legend.title);
         }
@@ -314,18 +312,18 @@ const RadarChart = function RadarChart(parent_selector, data, options) {
             .enter()
             .append("rect")
             .attr("x", cfg.w - 65)
-            .attr("y", (d,i) => i * 20)
-            .attr("width", 10)
-            .attr("height", 10)
+            .attr("y", (d,i) => i * 25)
+            .attr("width", 20)
+            .attr("height", 20)
             .style("fill", (d,i) => cfg.color(i));
         // Create labels
         legend.selectAll('text')
             .data(names)
             .enter()
             .append("text")
-            .attr("x", cfg.w - 52)
-            .attr("y", (d,i) => i * 20 + 9)
-            .attr("font-size", "11px")
+            .attr("x", cfg.w - 40)
+            .attr("y", (d,i) => i * 25 + 15)
+            .attr("font-size", "16px")
             .attr("fill", "#737373")
             .text(d => d);
     }
