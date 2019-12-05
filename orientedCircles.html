@@ -6,9 +6,19 @@
     <link rel="stylesheet" type="text/css" href="style.css" />
     <link rel="stylesheet" type="text/css" href="OrientedCircleStyle.css">
     <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="radar-chart.js"></script>
+
 </head>
 
 <body>
+
+<form name="myform" onSubmit="return handleClick()">
+
+    <input name="Submit"  type="submit" value="Search for Pokemon" >
+    <input type="text" id="myVal" placeholder="Enter Pokemon's Name&hellip;">
+
+</form>
+
 <h1>Pokemon & Their Types</h1>
 <div id="div_page_desc">
     <p>Encompasses Pokemon and which type they fall under: Bug, Dark, Dragon, etc.</p>
@@ -42,25 +52,63 @@
         </div>
     </div>
     <div id="my_dataviz"></div>
+    <div id="radar_chart"/>
 </div>
 
 <script>
 
-    let width = 1350;
-    let height = 400
+
+
+    let width = 1624;
+    let height = 560
     let radius = 10;
 
     // append the svg object to the body of the page
     let svg = d3.select("#my_dataviz")
         .append("svg")
-        .attr("width", "100%")
-        .attr("height", height)
+        .attr("width", "150%")
+        .attr("height", height+10)
+        .style("margin-left", "10px")
+        .style("margin-right", "10px")
+
+    var radarQueue = [];
+
+    let emptyOptions = [{
+            axes: [
+                {axis: "HP"},
+                {axis: "Attack"},
+                {axis: "Defense"},
+                {axis: "Special Attack"},
+                {axis: "Special Defense"},
+                {axis: "Speed"}
+            ]}
+        ]
+
+    var radarChartOptions = {
+        w: 350,
+        h: 350,
+        levels: 5,
+        labelFactor: 1.05,
+        format: '.0f',
+        dotRadius: 6,
+        color: d3.scaleOrdinal().range(["#4ac53a", "#ff6600", "#2a2fd4"])
+    };
+
+    var svg_radar1 = RadarChart("#radar_chart", emptyOptions, radarChartOptions);
 
     // create dummy data -> just one element per circle
     d3.csv("Pokemon.csv", function(d) {
         return {
             name: d.Name,
-            type: d.Type1
+            type: d.Type1,
+            gen: d.Generation,
+            strength: d.Total,
+            hp: d.HP,
+            attack: d.Attack,
+            defense: d.Defense,
+            spAtk: d.SpAtk,
+            spDef: d.SpDef,
+            speed: d.Speed
         };
     }).then(function(internalData) {
         // A scale that gives a X target position for each group
@@ -74,6 +122,10 @@
                 fractionalScale(10), fractionalScale(11), fractionalScale(12), fractionalScale(13), fractionalScale(14),
                 fractionalScale(15), fractionalScale(16), fractionalScale(17)])
 
+        let y = d3.scaleLinear()
+            .domain([6,1])
+            .range([20,520])
+
         // A color scale
         let color = d3.scaleOrdinal()
             .domain(["Bug", "Dark", "Dragon", "Electric", "Fairy", "Fighting", "Fire", "Flying", "Ghost",
@@ -83,31 +135,57 @@
                 '#E0C068', '#98D8D8', '#A8A878', '#A040A0', '#F85888',
                 '#B8A038', '#B8B8D0', '#6890F0'])
 
+        let size = d3.scaleLinear()
+            .domain([200, 800])
+            .range([5, 15]);
+
         // Initialize the circle: all located at the center of the svg area
         let node = svg.append("g")
             .selectAll("circle")
             .data(data)
             .enter()
             .append("circle")
-            .attr("r", radius)
+            .attr("r", function(d) { return size(d.strength)})
             .attr("cx", width / 2)
             .attr("cy", height / 2)
+            .attr("id", function(d) { return d.name })       // to select nodes by ID
             .style("fill", function(d){return color(d.type)})
-            //.style("fill-opacity", 1.0)
-            .attr("stroke", "black")
+            .attr("stroke", "white")
             .style("stroke-width", 2)
+            .on("click", clicked)
             .call(d3.drag() // call specific function when circle is dragged
                 .on("start", dragstarted)
                 .on("drag", dragged)
                 .on("end", dragended));
 
+        var yRange = d3.scaleLinear().domain([1,6])
+            .range([height,0]);
+
+        var y_axis = d3.axisRight().scale(yRange).ticks(6);
+
+        svg.append("g")
+            .attr("transform", "translate(1660,5)")
+            .attr("height", height)
+            .call(y_axis);
+
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 1680)
+            .attr("x", 0 - (height / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .style("font-family", "'Major Mono Display' , sans-serif")
+            .style("font-size", "18px")
+            .style("font-weight", "bold")
+            .style("margin-right", "20px")
+            .text("Generation");
+
         // Features of the forces applied to the nodes:
         let simulation = d3.forceSimulation()
-            .force("x", d3.forceX().strength(1.5).x( function(d){return x(d.type) } ))
-            .force("y", d3.forceY().strength(0.05).y( height/2 ))
-            .force("center", d3.forceCenter().x(width / 2).y(height / 2)) // Attraction to the center of the svg area
-            .force("charge", d3.forceManyBody().strength(15)) // Nodes are attracted one each other of value is > 0
-            .force("collide", d3.forceCollide().strength(.1).radius(32).iterations(1)) // Force that avoids circle overlapping
+            .force("x", d3.forceX().strength(1.5).x( function(d){ return x(d.type)}))
+            .force("y", d3.forceY().strength(1.5).y( function(d){ return y(parseInt(d.gen))}))
+            .force("charge", d3.forceManyBody().strength(10)) // Nodes are attracted one each other of value is > 0
+            .force("collide", d3.forceCollide().strength(.5).radius(function(d){return  size(d.strength) + 3 }).iterations(2)) // Force that avoids circle overlapping
 
         // Apply these forces to the nodes and update their positions.
         // Once the force algorithm is happy with positions ('alpha' value is low enough), simulations will stop.
@@ -117,11 +195,12 @@
                 node
                     .attr("cx", function(d) { return d.x = Math.max(radius, Math.min(width - radius, d.x)); })
                     .attr("cy", function(d) { return d.y = Math.max(radius, Math.min(height - radius, d.y)); });
-            });
+            })
+            .alphaTarget(.015);
 
         // What happens when a circle is dragged?
         function dragstarted(d) {
-            if (!d3.event.active) simulation.alphaTarget(.03).restart();
+            if (!d3.event.active) simulation.alphaTarget(.01).restart();
             d.fx = d.x;
             d.fy = d.y;
         }
@@ -130,18 +209,155 @@
             d.fy = d3.event.y;
         }
         function dragended(d) {
-            if (!d3.event.active) simulation.alphaTarget(.03);
+            if (!d3.event.active) simulation.alphaTarget(.01);
             d.fx = null;
             d.fy = null;
         }
 
+        function clicked(d, i) {
+            if (d3.event.defaultPrevented) return; // dragged
+
+            var node = null
+
+            // Node is not present in our queue
+            if(!radarQueue.includes(d)) {
+                // Max size reached, remove first added element
+                if(radarQueue.length > 1) {
+                    node = selectNodeByName(radarQueue.shift().name)
+                    highlightNode(node, false)
+                }
+                radarQueue.push(d)
+                node = selectNodeByName(d.name)
+                highlightNode(node, true)
+            }
+            // Node is present and will be removed from the queue
+            else {
+                var index = radarQueue.indexOf(d);
+                if (index > -1) {
+                    radarQueue.splice(index, 1);
+                    node = selectNodeByName(d.name)
+                    highlightNode(node, false)
+                }
+            }
+            // Radar ends up being empty
+            if (radarQueue === undefined || radarQueue.length == 0) {
+                radarChartOptions.legend = false
+                svg_radar1 = RadarChart("#radar_chart", emptyOptions, radarChartOptions)
+            }
+            else {
+                radarChartOptions.legend = {title: "Pokemon", translateX: 0, translateY: 0 }
+                var radar = generateRadarChartParams(radarQueue)
+                svg_radar1 = RadarChart("#radar_chart", radar, radarChartOptions);
+            }
+        }
     })
+
+    function generateRadarChartParams(queue) {
+        var radarParams = []
+
+        for(let i in queue) {
+            radarParams.push({
+                name: queue[i].name,
+                axes: [
+                    {axis: "HP", value: queue[i].hp},
+                    {axis: "Attack", value: queue[i].attack},
+                    {axis: "Defense", value: queue[i].defense},
+                    {axis: "Special Attack", value: queue[i].spAtk},
+                    {axis: "Special Defense", value: queue[i].spDef},
+                    {axis: "Speed", value: queue[i].speed}
+                ]
+            })
+        }
+
+        return radarParams
+    }
+
+    function selectNodeByName(name) {
+        var node = d3.selectAll("circle").filter(function (d) {
+            if(d.name === name) {
+                return d.name === name
+            }
+        })
+        return node
+    }
+
+    function highlightNode(node, highlight) {
+        var radius = getNodeRadius(node)
+        if(highlight) {
+            node.attr("r", radius * 1.5)
+                .attr("stroke", "black")
+                .attr("stroke-width", "4px")
+        }
+        else {
+            node.attr("r", radius / 1.5)
+                .attr("stroke", "white")
+                .attr("stroke-width", "2px")
+        }
+    }
+
+    function getNodeRadius(node) {
+        return node.attr("r")
+    }
 
     function fractionalScale(numerator) {
         if(numerator === 0)
-            return 0
+            return 50
         else
-            return numerator/18 * width;
+            return (numerator/18 * width) + 55;
+    }
+
+    var dataset = [];
+
+    function searchForPokemon(name) {
+
+        // A color scale
+        let color = d3.scaleOrdinal()
+            .domain(["Bug", "Dark", "Dragon", "Electric", "Fairy", "Fighting", "Fire", "Flying", "Ghost",
+                "Grass", "Ground", "Ice", "Normal", "Poison", "Psychic", "Rock", "Steel", "Water"])
+            .range(['#A8B820', '#705848', '#7038F8', '#F8D030', '#EE99AC',
+                '#C03028', '#F08030', '#A890F0', '#705898', '#78C850',
+                '#E0C068', '#98D8D8', '#A8A878', '#A040A0', '#F85888',
+                '#B8A038', '#B8B8D0', '#6890F0'])
+
+        var node = d3.selectAll("circle").filter(function (d) {
+            if(d.name != name) {
+
+                var node2 = selectNodeByName(d.name)
+                node2.style("fill", "#808080")
+
+            }
+
+        })
+
+        setTimeout(function() {
+
+            var node = d3.selectAll("circle").filter(function (d) {
+                if(d.name != name) {
+
+                    var node2 = selectNodeByName(d.name)
+                    node2 .style("fill", function(d){return color(d.type)})
+
+                }
+
+            })
+
+        } , 5000)
+
+        return node
+    }
+
+    function handleClick(event){
+
+        var name = document.getElementById("myVal").value
+
+        console.log(name);
+        if(name == ''){
+            return false;
+        }
+        var node = searchForPokemon(name)
+
+
+        return false;
     }
 
 </script>
